@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NutriFit - Kalori ve Besin Değeri Hesaplayıcı</title>
+    <style>
+        :root {
+            --primary: #2e7d32;
+            --primary-light: #4caf50;
+            --bg-color: #f4f6f8;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background-color: var(--primary);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            font-size: 24px;
+        }
+
+        header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        main {
+            flex: 1;
+            max-width: 600px;
+            margin: 30px auto;
+            padding: 20px;
+            background: var(--card-bg);
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            width: 90%;
+        }
+
+        .section-title {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: var(--primary);
+            border-bottom: 2px solid var(--bg-color);
+            padding-bottom: 8px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        select, input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 14px;
+            outline: none;
+        }
+
+        select:focus, input:focus {
+            border-color: var(--primary-light);
+        }
+
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px;
+            width: 100%;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background-color: var(--primary-light);
+        }
+
+        .result-box {
+            margin-top: 25px;
+            background: #e8f5e9;
+            border-left: 5px solid var(--primary);
+            padding: 15px;
+            border-radius: 6px;
+            display: none;
+        }
+
+        .result-box h3 {
+            margin-bottom: 10px;
+            color: var(--primary);
+        }
+
+        .result-item {
+            font-size: 15px;
+            margin-bottom: 5px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 15px;
+            background: #e0e0e0;
+            font-size: 13px;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>NutriFit</h1>
+        <p>Akıllı Kalori ve Besin Değeri Hesaplayıcı</p>
+    </header>
+
+    <main>
+        <div class="section-title">Yemek / Besin Seçimi</div>
+        
+        <div class="form-group">
+            <label for="foodSelect">Yediğiniz Yemeği Seçin:</label>
+            <select id="foodSelect">
+                <option value="menemen">Menemen (1 Porsiyon)</option>
+                <option value="m.corbasi">Mercimek Çorbası (1 Kase)</option>
+                <option value="karni_yarik">Karnıyarık (1 Adet)</option>
+                <option value="p.pilavi">Pirinç Pilavı (1 Porsiyon)</option>
+                <option value="tavuk_sote">Tavuk Sote (1 Porsiyon)</option>
+                <option value="makarna">Spagetti (1 Porsiyon)</option>
+                <option value="lahmacun">Lahmacun (1 Adet)</option>
+                <option value="manti">Mantı (1 Porsiyon)</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="portionInput">Porsiyon Miktarı (Adet / Kase / Porsiyon):</label>
+            <input type="number" id="portionInput" value="1" min="0.5" step="0.5">
+        </div>
+
+        <button onclick="calculateNutrition()">Besin Değerini Hesapla</button>
+
+        <div id="resultBox" class="result-box">
+            <h3>Hesaplanan Değerler</h3>
+            <div class="result-item" id="resCalorie"><b>Kalori:</b> 0 kcal</div>
+            <div class="result-item" id="resProtein"><b>Protein:</b> 0 g</div>
+            <div class="result-item" id="resCarb"><b>Karbonhidrat:</b> 0 g</div>
+            <div class="result-item" id="resFat"><b>Yağ:</b> 0 g</div>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 NutriFit - Tüm Hakları Saklıdır.</p>
+    </footer>
+
+    <script>
+        // 50 tariflik/besinlik veritabanından örnek bir veri havuzu mantığı
+        const nutritionData = {
+            "menemen": { name: "Menemen", calorie: 210, protein: 10, carb: 8, fat: 14 },
+            "m.corbasi": { name: "Mercimek Çorbası", calorie: 140, protein: 7, carb: 20, fat: 3 },
+            "karni_yarik": { name: "Karnıyarık", calorie: 320, protein: 16, carb: 12, fat: 22 },
+            "p.pilavi": { name: "Pirinç Pilavı", calorie: 250, protein: 4, carb: 45, fat: 6 },
+            "tavuk_sote": { name: "Tavuk Sote", calorie: 280, protein: 28, carb: 6, fat: 15 },
+            "makarna": { name: "Spagetti", calorie: 350, protein: 10, carb: 60, fat: 7 },
+            "lahmacun": { name: "Lahmacun", calorie: 220, protein: 11, carb: 25, fat: 8 },
+            "manti": { name: "Mantı", calorie: 400, protein: 15, carb: 55, fat: 14 }
+        };
+
+        function calculateNutrition() {
+            const select = document.getElementById('foodSelect').value;
+            const multiplier = parseFloat(document.getElementById('portionInput').value) || 1;
+            
+            const food = nutritionData[select];
+            if (!food) return;
+
+            const totalCal = Math.round(food.calorie * multiplier);
+            const totalProtein = (food.protein * multiplier).toFixed(1);
+            const totalCarb = (food.carb * multiplier).toFixed(1);
+            const totalFat = (food.fat * multiplier).toFixed(1);
+
+            document.getElementById('resCalorie').innerHTML = `<b>Kalori:</b> ${totalCal} kcal`;
+            document.getElementById('resProtein').innerHTML = `<b>Protein:</b> ${totalProtein} g`;
+            document.getElementById('resCarb').innerHTML = `<b>Karbonhidrat:</b> ${totalCarb} g`;
+            document.getElementById('resFat').innerHTML = `<b>Yağ:</b> ${totalFat} g`;
+
+            document.getElementById('resultBox').style.display = 'block';
+        }
+    </script>
+</body>
+</html>
